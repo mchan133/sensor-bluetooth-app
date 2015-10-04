@@ -3,4 +3,16 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+
+    <!--activity_main-->
+    <string name="no_connect_message">Not connected to device.</string>
+    <string name="connect">Connect</string>
+
+    <!--activity_second-->
+    <string name="collect_data">Collect Data</string>
+    <string name="recent_result">Most Recent Result</string>
+    <string name="result_history">Result History</string>
+
+
+    <string name="title_activity_second">SecondActivity</string>
 </resources>
