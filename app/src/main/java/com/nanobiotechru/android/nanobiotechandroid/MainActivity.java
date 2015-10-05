@@ -6,15 +6,37 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.content.Intent;
+import android.widget.Button;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        ((Button)findViewById(R.id.button)).setOnClickListener(mainActivityListener);
     }
+
+    public void connectArduino() {
+        Intent intent = new Intent(this, SecondActivity.class);
+        startActivity(intent);
+    }
+
+    private View.OnClickListener mainActivityListener = new View.OnClickListener(){
+        public void onClick(View view){
+            switch(view.getId()){
+                case R.id.button:
+                    connectArduino();
+                    break;
+                default:
+                    break;
+            }
+
+        }
+    };
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -36,10 +58,5 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void onConnectClick(View view){
-        Intent intent = new Intent(this, SecondActivity.class);
-        startActivity(intent);
     }
 }

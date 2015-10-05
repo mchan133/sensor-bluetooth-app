@@ -5,16 +5,43 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
-public class SecondActivity extends AppCompatActivity {
+public class SecondActivity extends AppCompatActivity{
+
+    TextView buttonClicked;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
+
+        ((Button)findViewById(R.id.button1)).setOnClickListener(secondActivityListener);
+        ((Button)findViewById(R.id.button2)).setOnClickListener(secondActivityListener);
+        ((Button)findViewById(R.id.button3)).setOnClickListener(secondActivityListener);
+
+        buttonClicked = (TextView)findViewById(R.id.textView1);
+
     }
 
-    @Override
+    private View.OnClickListener secondActivityListener = new View.OnClickListener(){
+        public void onClick(View view){
+            switch(view.getId()){
+                case R.id.button1: // Result History
+                    buttonClicked.setText("Result History Clicked");
+                    break;
+                case R.id.button2: // Most Recent Result
+                    buttonClicked.setText("Most Recent Clicked");
+                    break;
+                case R.id.button3: // Collect Data
+                    buttonClicked.setText("Collect Data Clicked");
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_second, menu);
@@ -34,17 +61,5 @@ public class SecondActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    //Goes to data collection
-    public void onCollectDataClick(View view){
-    }
-
-    //Goes to details of most recent result
-    public void onRecentResultClick(View view){
-    }
-
-    //Goes to list of past results
-    public void onResultHistoryClick(View view){
     }
 }
