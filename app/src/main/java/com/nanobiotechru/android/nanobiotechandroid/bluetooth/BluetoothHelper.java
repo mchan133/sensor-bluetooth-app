@@ -129,7 +129,7 @@ public class BluetoothHelper {
                 return false;
             }
             // connect with remote device
-            mBluetoothGatt = mBluetoothDevice.connectGatt(mParent, false, mBleCallback);
+            mBluetoothGatt = mBluetoothDevice.connectGatt(mParent, true, mBleCallback);
         }
         return true;
     }
@@ -275,11 +275,7 @@ public class BluetoothHelper {
             if(rawValue.length > 3) intValue = intValue + ((int)rawValue[3] << 8);
 
             if (rawValue.length > 0) {
-                final StringBuilder stringBuilder = new StringBuilder(rawValue.length);
-                for(byte byteChar : rawValue) {
-                    stringBuilder.append(String.format("%c", byteChar));
-                }
-                strValue = stringBuilder.toString();
+              strValue = new String(rawValue);
             }
         }
 

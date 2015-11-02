@@ -5,6 +5,7 @@ public class BleDefinedUUIDs {
 	
 	public static class Service {
 		final static public UUID HEART_RATE               = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb");
+		final static public UUID CUSTOM_SERVICE			  = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
 	};
 	
 	public static class Characteristic {
@@ -15,6 +16,7 @@ public class BleDefinedUUIDs {
 		final static public UUID APPEARANCE               = UUID.fromString("00002a01-0000-1000-8000-00805f9b34fb");
 		final static public UUID BODY_SENSOR_LOCATION     = UUID.fromString("00002a38-0000-1000-8000-00805f9b34fb");
 		final static public UUID BATTERY_LEVEL            = UUID.fromString("00002a19-0000-1000-8000-00805f9b34fb");
+		final static public UUID CUSTOM_CHARACTERISTIC 	  = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
 	}
 	
 	public static class Descriptor {
