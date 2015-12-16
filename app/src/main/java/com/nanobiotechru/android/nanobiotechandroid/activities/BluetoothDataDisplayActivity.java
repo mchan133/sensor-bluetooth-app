@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -20,6 +21,8 @@ import com.nanobiotechru.android.nanobiotechandroid.bluetooth.BluetoothHelper;
 import com.nanobiotechru.android.nanobiotechandroid.bluetooth.interfaces.BleWrapperUiCallbacks;
 import com.nanobiotechru.android.nanobiotechandroid.bluetooth.utils.BleDefinedUUIDs;
 
+import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
 import java.util.List;
 
 public class BluetoothDataDisplayActivity extends ActionBarActivity {
@@ -57,7 +60,29 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                                                     byte[] rawValue, String timestamp) {
 
 
-                Log.d("BDDA","Notification = " + strValue);
+               String val =  bytesToHex(rawValue);
+
+
+
+                Log.d("BDDA", "Notification = " + strValue + " or " + val);
+
+
+                String filename = "arddata.txt";
+
+                FileOutputStream outputStream;
+
+                try {
+                    outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+
+                    outputStream.write(rawValue);
+
+                    outputStream.close();
+
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+
 
                 runOnUiThread(new Runnable() {
                     @Override
@@ -83,7 +108,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
             public void uiAvailableServices(BluetoothGatt gatt, BluetoothDevice device,
                                             List<BluetoothGattService> services) {
 
-                Log.d("BDDA","Got services");
+                Log.d("BDDA", "Got services");
 
                 for(BluetoothGattService s : services){
                     if(s.getUuid().equals(BleDefinedUUIDs.Service.CUSTOM_SERVICE)){
@@ -133,14 +158,28 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
             }
 
+            @Override
+            public void uiSuccessfulWrite(BluetoothGatt gatt, BluetoothDevice device,
+                                          BluetoothGattService service, BluetoothGattCharacteristic ch,
+                                          String description) {
+
+                Log.d("BDDA,","success! " + description);
+
+            }
+            @Override
+            public void uiFailedWrite(BluetoothGatt gatt, BluetoothDevice device,
+                                      BluetoothGattService service, BluetoothGattCharacteristic ch,
+                                      String description) {
+                Log.d("BDDA,","fail! " + description);
+
+            }
+
         });
 
         helper.initialize();
 
         helper.connect(BLE_MAC_ADDRESS);
-
-
-
+        
 
         sendData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -148,15 +187,38 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
                     String data = inputData.getText().toString();
 
-                    int integer = Integer.parseInt(data);
+                    //int integer = Integer.parseInt(data);
 
-                    byte[] dataBytes = {(byte)integer};
+                    //Log.d("BDDA","int value = " + integer);
+
+                    byte[] dataBytes = data.getBytes();
+                    //{(byte)integer};
 
                     helper.writeDataToCharacteristic(characteristic,dataBytes);
 
             }
         });
 
+    }
+
+
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+    public static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
+    public static int byteArrayToInt(byte[] b)
+    {
+        return   b[3] & 0xFF |
+                (b[2] & 0xFF) << 8 |
+                (b[1] & 0xFF) << 16 |
+                (b[0] & 0xFF) << 24;
     }
 
     @Override

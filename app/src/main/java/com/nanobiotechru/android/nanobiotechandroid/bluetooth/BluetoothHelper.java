@@ -323,7 +323,7 @@ public class BluetoothHelper {
 
         boolean success = mBluetoothGatt.setCharacteristicNotification(ch, enabled);
         if(!success) {
-            Log.e("------", "Seting proper notification status for characteristic failed!");
+            Log.e("------", "Setting proper notification status for characteristic failed!");
         }
 
         // This is also sometimes required (e.g. for heart rate monitors) to enable notifications/indications
