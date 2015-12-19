@@ -66,6 +66,9 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
                 Log.d("BDDA", "Notification = " + strValue + " or " + val);
 
+                //TODO: strValue is your data...for right now pretend it's just numbers, in whatever form you want it to be
+                //create a method OUTSIDE the onCreate method, to do your filtering, and another one for peak detection
+                //then call those methods on this data
 
                 String filename = "arddata.txt";
 
