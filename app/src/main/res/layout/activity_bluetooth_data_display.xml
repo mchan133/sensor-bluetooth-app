@@ -1,3 +1,4 @@
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
@@ -19,14 +20,39 @@
         android:id="@+id/send_data_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/input_data_field"
         android:text="Send"
-        />
+        android:layout_below="@+id/input_data_field"
+        android:layout_alignParentStart="true" />
 
     <TextView
         android:id="@+id/display_data_view"
-        android:text="@string/hello_world" android:layout_width="wrap_content"
+        android:text="@string/hello_world"
+        android:layout_width="wrap_content"
         android:layout_below="@id/send_data_btn"
         android:layout_height="wrap_content" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Find Peaks"
+        android:id="@+id/analyze_btn"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/display_peaks_view"
+        android:text="[Num Peaks Found]"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_below="@+id/analyze_btn" />
+
+    <TextView
+        android:id="@+id/display_points_view"
+        android:text="Points Received: "
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_above="@+id/analyze_btn" />
+
+
 
 </RelativeLayout>
