@@ -31,7 +31,7 @@ import java.util.List;
 
 public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
-
+//test
     private final String BLE_MAC_ADDRESS = "20:C3:8F:D5:35:06";
 
     //UI ELEMENTS
