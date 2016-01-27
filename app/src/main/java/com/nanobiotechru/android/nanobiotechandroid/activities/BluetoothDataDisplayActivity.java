@@ -40,8 +40,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
     private Button sendData;
     private TextView pointsData;
     private TextView peakData;
-    private Button analyzeData
-    ;
+    private Button analyzeData;
+
     //TESTING (temporary solution)
     private static String[] dataString = new String[30000];
     private static int storedPoints = 0;
@@ -135,13 +135,18 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
                 try {
 
-                    bw = new BufferedWriter(new FileWriter(file),1000);
-                    bw.write(strValue);
-                    bw.flush();
-                    bw.close();
+                    bw = new BufferedWriter(new FileWriter(file, true),1000);
+                    //bw.write(strValue);
+                    //bw.flush();
+                    //bw.close();
                     //outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
                     //outputStream.write(rawValue);
                     //outputStream.close();
+                    for(byte byt : rawValue){
+                        bw.write((byt & 0xFF) + "\n");
+                    }
+                    bw.flush();
+                    bw.close();
 
                 }
                 catch (Exception e){
@@ -152,7 +157,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        displayData.setText(strValue);
+                        //displayData.setText(strValue);
                         if(storedPoints < dataString.length){
                             dataString[storedPoints++] = strValue;
                         }
