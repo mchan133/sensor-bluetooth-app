@@ -32,7 +32,8 @@ import java.util.List;
 public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
 
-    private final String BLE_MAC_ADDRESS = "20:C3:8F:D5:35:06";
+    //private final String BLE_MAC_ADDRESS = "20:C3:8F:D5:35:06"; old string
+    private final String BLE_MAC_ADDRESS = "74:DA:EA:B2:67:9A";
 
     //UI ELEMENTS
     private EditText inputData;
@@ -147,27 +148,17 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                     }
                     bw.flush();
                     bw.close();
+                    storedPoints++;
 
                 }
                 catch (Exception e){
                     e.printStackTrace();
                 }
 
-
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //displayData.setText(strValue);
-                        if(storedPoints < dataString.length){
-                            dataString[storedPoints++] = strValue;
-                        }
-                    }
-                });
-
                 runOnUiThread(new Runnable(){
                     @Override
                     public void run(){
-                        pointsData.setText("Points Received: " + storedPoints);
+                        pointsData.setText("Points Received: " + storedPoints*20);
                     }
                 });
 
