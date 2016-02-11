@@ -23,11 +23,15 @@ import com.nanobiotechru.android.nanobiotechandroid.bluetooth.interfaces.BleWrap
 import com.nanobiotechru.android.nanobiotechandroid.bluetooth.utils.BleDefinedUUIDs;
 
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Calendar;
 
 public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
@@ -43,8 +47,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
     private TextView peakData;
     private Button analyzeData;
 
-    //TESTING (temporary solution)
-    private static String[] dataString = new String[30000];
+    //TESTING (temporary)
     private static int storedPoints = 0;
 
     //BLE STUFF
@@ -53,7 +56,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
     private BluetoothHelper helper;
 
 
-    public static File checkExternalAvailable(String filename) {
+
+    public static File makeExternalFile(String filename) {
         File file;
         try {
             String state = Environment.getExternalStorageState();
@@ -93,19 +97,11 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         analyzeData = (Button)findViewById(R.id.analyze_btn);
 
 
-        String filename = "arddata.txt";
-        final File file = checkExternalAvailable(filename);
-        if(file != null) {
-            peakData.setText("Ext. Storage: " + file.toString());
+        String filename = "arddata_raw.txt";
+        final File file_bytes = makeExternalFile(filename);
+        if(file_bytes != null) {
+            peakData.setText("Ext. Storage: " + file_bytes.toString());
         }else peakData.setText("No Ext. Storage.");
-
-        /*
-        try{
-
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        */
 
         helper = new BluetoothHelper(BluetoothDataDisplayActivity.this,new BleWrapperUiCallbacks.Null(){
 
@@ -118,31 +114,17 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
                String val =  bytesToHex(rawValue);
 
-
-
                 Log.d("BDDA", "Notification = " + strValue + " or " + val);
 
                 //TODO: strValue is your data...for right now pretend it's just numbers, in whatever form you want it to be
                 //create a method OUTSIDE the onCreate method, to do your filtering, and another one for peak detection
                 //then call those methods on this data
 
-                String filename = "arddata.txt";
-                //File file = null;
-
-
-                //FileOutputStream outputStream;
-                FileWriter fw;
                 BufferedWriter bw;
-
                 try {
 
-                    bw = new BufferedWriter(new FileWriter(file, true),1000);
-                    //bw.write(strValue);
-                    //bw.flush();
-                    //bw.close();
-                    //outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-                    //outputStream.write(rawValue);
-                    //outputStream.close();
+                    // need checks for no ext. storage
+                    bw = new BufferedWriter(new FileWriter(file_bytes, true),1000);
                     for(byte byt : rawValue){
                         bw.write((byt & 0xFF) + "\n");
                     }
@@ -158,7 +140,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                 runOnUiThread(new Runnable(){
                     @Override
                     public void run(){
-                        pointsData.setText("Points Received: " + storedPoints*20);
+                        // should be 20 bytes/packet
+                        pointsData.setText("approx. Points Received: " + storedPoints*20);
                     }
                 });
 
@@ -257,13 +240,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
                     String data = inputData.getText().toString();
 
-                    //int integer = Integer.parseInt(data);
-
-                    //Log.d("BDDA","int value = " + integer);
-
                     byte[] dataBytes = data.getBytes();                    //{(byte)integer};
 
-                    dataString = new String[30000];
                     storedPoints = 0;
 
                     helper.writeDataToCharacteristic(characteristic,dataBytes);
@@ -274,15 +252,16 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         analyzeData.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                String filename = "arddata.txt";
+                String filename = "arddata_raw.txt";
                 double minPeakThreshold = .5;
                 double peakFallRatio = .9;
                 double[] data = null;
 
 
-                data = parseData(filename, false);
+                data = parseData(file_bytes);
                 if(data != null){
-                    /*
+                    int numMaxes = newFindPeak(data, 1.5);
+                    /* Old Find Peak
                     double[] smoothed;
                     smoothed = filterData(detrend(data));
                     smoothed = filterData(data);
@@ -290,8 +269,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                     int numMaxes = countPeaks(isPeak);
                     */
 
-                    int numMaxes = newFindPeak(data, 1.5);
-                    peakData.setText("Num Peaks Found: " + numMaxes + "\nUsing " + data.length + " points.");
+                    peakData.setText("Num Peaks Found: " + numMaxes + "\nUsing " + data.length + " received points.");
                 }else{
                     peakData.setText("No Data Found");
                 }
@@ -321,9 +299,69 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
      * double[] smoothedData = filterData(detrend(parseData(rawData)));
      * boolean[] peakArray = findPeaks(smoothedData, peakThreshold, dropFactor=0);
      */
-    public static double[] parseData(String dataStream, boolean test){
+    public static double[] parseData(File f){
         // Reading Input, customize according to source
         //return null;
+
+        if(true) {
+            // Reading Input
+            FileInputStream fStream;
+            BufferedReader bReader = null;
+            int points = 0;
+
+            if(f.exists()){
+                //System.out.println("File " + f.getName() + ": " + f.length());
+                Log.e("BDDA", f.toString() + " does exist.");
+            }else{
+                //System.out.println("Problem: File [" + dataStream + "] does not exist.");
+                Log.e("BDDA", f.toString() + " does not exist.");
+            }
+            int[] tempData = new int[(int) (f.length()/2)];
+            try{
+                fStream = new FileInputStream(f);
+                bReader = new BufferedReader(new InputStreamReader(fStream));
+
+                // Reading ints from file
+                while(bReader.ready()){
+                    tempData[points] = Integer.parseInt(bReader.readLine());
+                    points++;
+                }
+            }catch(Exception e){
+                System.out.println("Exception caught in first try/catch");
+                System.out.println(e.getMessage());
+            }finally{
+                try{bReader.close();}
+                catch(Exception ex){/*ignore*/}
+            }
+
+            // Conversion to double
+            double[] doubleData = new double[points];
+            for(int i=0; i<points; i++){
+                doubleData[i] = 2.0*((double)tempData[i]*(5.0/256)) - 5.0;
+            }
+
+            //save as text file;
+            //TODO: add date to filename
+            File file_double = makeExternalFile("arddata_double_" + System.currentTimeMillis() + ".txt");
+            BufferedWriter bw;
+            try {
+
+                bw = new BufferedWriter(new FileWriter(file_double, true),1000);
+                for(double d: doubleData){
+                    bw.write(d + "\n");
+                }
+                bw.flush();
+                bw.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }finally {
+                f.delete();
+            }
+
+            return doubleData;
+        }
+
+        /*
         if(!test && storedPoints > 0) {
             StringBuilder sb = new StringBuilder();
             int j = 0;
@@ -354,6 +392,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         }else if(test){
             return null;
         }
+        */
         return null;
     }
 
@@ -388,8 +427,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
         // These values can be tinkered with to change the characteristics of the smoothing
         // Lower number = high-freq smoothing; Higher number = low-freq smoothing
-        // Values chosen depend on the sampling frequency of the Arduino
-        final int[] sampleRates = {5};
+        // Values chosen depend on the sampling frequency of the Arduino (about 800-1000 Hz)
+        final int[] sampleRates = {20};
         int passes = sampleRates.length;
 
         int points = data.length;
