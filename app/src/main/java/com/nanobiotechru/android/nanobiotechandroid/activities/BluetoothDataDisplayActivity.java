@@ -49,6 +49,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
     //TESTING (temporary)
     private static int storedPoints = 0;
+    private final String filename_raw = "arddata_raw.txt";
 
     //BLE STUFF
     private BluetoothGattService service;
@@ -97,6 +98,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         analyzeData = (Button)findViewById(R.id.analyze_btn);
 
 
+        //TODO: change to one central filename
         String filename = "arddata_raw.txt";
         final File file_bytes = makeExternalFile(filename);
         if(file_bytes != null) {
@@ -260,7 +262,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
                 data = parseData(file_bytes);
                 if(data != null){
-                    int numMaxes = newFindPeak(data, 1.5);
+                    int numMaxes = newFindPeak(data, .5);
                     /* Old Find Peak
                     double[] smoothed;
                     smoothed = filterData(detrend(data));
@@ -303,19 +305,12 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         // Reading Input, customize according to source
         //return null;
 
-        if(true) {
+        if(f.exists()) {
             // Reading Input
             FileInputStream fStream;
             BufferedReader bReader = null;
             int points = 0;
 
-            if(f.exists()){
-                //System.out.println("File " + f.getName() + ": " + f.length());
-                Log.e("BDDA", f.toString() + " does exist.");
-            }else{
-                //System.out.println("Problem: File [" + dataStream + "] does not exist.");
-                Log.e("BDDA", f.toString() + " does not exist.");
-            }
             int[] tempData = new int[(int) (f.length()/2)];
             try{
                 fStream = new FileInputStream(f);
@@ -340,8 +335,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                 doubleData[i] = 2.0*((double)tempData[i]*(5.0/256)) - 5.0;
             }
 
-            //save as text file;
-            //TODO: add date to filename
+            //save as text file
+            //TODO: Check for file creation failure
             File file_double = makeExternalFile("arddata_double_" + System.currentTimeMillis() + ".txt");
             BufferedWriter bw;
             try {
@@ -359,6 +354,10 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
             }
 
             return doubleData;
+
+        }else{
+            Log.e("BDDA", f.toString() + " does not exist.");
+            return null;
         }
 
         /*
@@ -393,7 +392,6 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
             return null;
         }
         */
-        return null;
     }
 
     public static double[] detrend(double[] data){
