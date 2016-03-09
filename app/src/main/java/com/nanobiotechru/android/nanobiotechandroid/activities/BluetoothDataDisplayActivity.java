@@ -102,12 +102,14 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
     }
 
     //Function for updating the plot maybe update every 5-10?
-    public synchronized void updatePlot(Number val) {
+    //synchronized
+    public void updatePlot(Number val) {
         if(liadata.size() > SAMPLE_HISTORY){
             liadata.removeFirst();
         }
         liadata.addLast(null, val);
         plot.redraw();
+        Log.e("BDDA", "updated plot " + val);
 
     }
 
@@ -128,7 +130,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         //plotting
         plot = (XYPlot)findViewById(R.id.plot);
         liadata = new SimpleXYSeries("Sensor Data");
-        plot.setRangeBoundaries(-5, 5, BoundaryMode.FIXED);
+        //plot.setRangeBoundaries(-5, 5, BoundaryMode.FIXED);
+        plot.setRangeBoundaries(0, 300, BoundaryMode.FIXED);
         plot.setDomainBoundaries(0, 1100, BoundaryMode.FIXED);
         plot.addSeries(liadata, new LineAndPointFormatter(Color.rgb(100, 100, 200), null, null, null));
         plot.setDomainStepValue(11);
@@ -204,6 +207,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                     bw = new BufferedWriter(new FileWriter(file_bytes, true),1000);
                     for(byte byt : rawValue){
                         bw.write((byt & 0xFF) + "\n");
+                        updatePlot((int)(byt & 0xFF));
                     }
                     bw.flush();
                     bw.close();
@@ -218,7 +222,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                     @Override
                     public void run(){
                         // should be 20 bytes/packet
-                        pointsData.setText("approx. Points Received: " + storedPoints*20);
+                        //pointsData.setText("approx. Points Received: " + storedPoints*20);
                     }
                 });
 
@@ -309,7 +313,6 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         helper.initialize();
 
         helper.connect(BLE_MAC_ADDRESS);
-        
 
         sendData.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -336,7 +339,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                 double[] data = null;
 
 
-                data = parseData(file_bytes);
+                data = parseData(file_bytes, false, plot);
                 if(data != null){
                     int numMaxes = newFindPeak(data, .5);
                     /* Old Find Peak
@@ -377,7 +380,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
      * double[] smoothedData = filterData(detrend(parseData(rawData)));
      * boolean[] peakArray = findPeaks(smoothedData, peakThreshold, dropFactor=0);
      */
-    public static double[] parseData(File f){
+    public static double[] parseData(File f, boolean delete, XYPlot plot){
         // Reading Input, customize according to source
         //return null;
 
@@ -405,6 +408,15 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
                 catch(Exception ex){/*ignore*/}
             }
 
+            // try plotting after
+            Number[] numarr = new Number[points];
+            for(int i=0; i<points; i++){
+                numarr[i] = tempData[i];
+            }
+            SimpleXYSeries raw = new SimpleXYSeries(Arrays.asList(numarr), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY, "Sensor Data");
+            plot.addSeries(raw, new LineAndPointFormatter(Color.rgb(100, 100, 200), null, null, null));
+            plot.redraw();
+
             // Conversion to double
             double[] doubleData = new double[points];
             for(int i=0; i<points; i++){
@@ -426,7 +438,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
             }catch (Exception e){
                 e.printStackTrace();
             }finally {
-                f.delete();
+                if(delete) f.delete();
             }
 
             return doubleData;
