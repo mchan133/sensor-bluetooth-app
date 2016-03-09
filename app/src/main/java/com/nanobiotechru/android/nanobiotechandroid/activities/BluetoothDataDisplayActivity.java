@@ -33,6 +33,18 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Calendar;
 
+
+import android.content.Context;
+import android.graphics.Color;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import com.androidplot.util.PlotStatistics;
+import com.androidplot.xy.*;
+
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
+
 public class BluetoothDataDisplayActivity extends ActionBarActivity {
 
 
@@ -56,6 +68,10 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
     private BluetoothGattCharacteristic characteristic;
     private BluetoothHelper helper;
 
+    //PLOTTING
+    private static final int SAMPLE_HISTORY = 1000;
+    private XYPlot plot;
+    private SimpleXYSeries liadata;
 
 
     public static File makeExternalFile(String filename) {
@@ -85,17 +101,76 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         return file;
     }
 
+    //Function for updating the plot maybe update every 5-10?
+    public synchronized void updatePlot(Number val) {
+        if(liadata.size() > SAMPLE_HISTORY){
+            liadata.removeFirst();
+        }
+        liadata.addLast(null, val);
+        plot.redraw();
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth_data_display);
 
-        inputData = (EditText)findViewById(R.id.input_data_field);
-        displayData = (TextView)findViewById(R.id.display_data_view);
+
+        //Text fields and buttons
+        //inputData = (EditText)findViewById(R.id.input_data_field);
+        //displayData = (TextView)findViewById(R.id.display_data_view);
         sendData = (Button)findViewById(R.id.send_data_btn);
-        pointsData = (TextView)findViewById(R.id.display_points_view);
+        //pointsData = (TextView)findViewById(R.id.display_points_view);
         peakData = (TextView)findViewById(R.id.display_peaks_view);
         analyzeData = (Button)findViewById(R.id.analyze_btn);
+
+        //plotting
+        plot = (XYPlot)findViewById(R.id.plot);
+        liadata = new SimpleXYSeries("Sensor Data");
+        plot.setRangeBoundaries(-5, 5, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(0, 1100, BoundaryMode.FIXED);
+        plot.addSeries(liadata, new LineAndPointFormatter(Color.rgb(100, 100, 200), null, null, null));
+        plot.setDomainStepValue(11);
+        plot.setTicksPerRangeLabel(1);
+        plot.setDomainLabel("Sample Index");
+        plot.setRangeLabel("Voltage [V]");
+        plot.getDomainLabelWidget().pack();
+        plot.getRangeLabelWidget().pack();
+
+        /*
+        // setup checkboxes:
+        hwAcceleratedCb = (CheckBox) findViewById(R.id.hwAccelerationCb);
+        final PlotStatistics levelStats = new PlotStatistics(1000, false);
+        final PlotStatistics histStats = new PlotStatistics(1000, false);
+
+        aprLevelsPlot.addListener(levelStats);
+        aprHistoryPlot.addListener(histStats);
+        hwAcceleratedCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                if(b) {
+                    aprLevelsPlot.setLayerType(View.LAYER_TYPE_NONE, null);
+                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_NONE, null);
+                } else {
+                    aprLevelsPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                    aprHistoryPlot.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+                }
+            }
+        });
+        showFpsCb = (CheckBox) findViewById(R.id.showFpsCb);
+        showFpsCb.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                levelStats.setAnnotatePlotEnabled(b);
+                histStats.setAnnotatePlotEnabled(b);
+            }
+        });
+        */
+
+
+
+
 
 
         //TODO: change to one central filename
@@ -240,7 +315,8 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
 
-                    String data = inputData.getText().toString();
+                    //String data = inputData.getText().toString();
+                    String data = "a";
 
                     byte[] dataBytes = data.getBytes();                    //{(byte)integer};
 
@@ -305,7 +381,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         // Reading Input, customize according to source
         //return null;
 
-        if(f.exists()) {
+        if(f!= null && f.exists()) {
             // Reading Input
             FileInputStream fStream;
             BufferedReader bReader = null;
