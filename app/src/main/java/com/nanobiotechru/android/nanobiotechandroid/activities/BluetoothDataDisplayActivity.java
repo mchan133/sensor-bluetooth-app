@@ -132,7 +132,7 @@ public class BluetoothDataDisplayActivity extends ActionBarActivity {
         liadata = new SimpleXYSeries("Sensor Data");
         //plot.setRangeBoundaries(-5, 5, BoundaryMode.FIXED);
         plot.setRangeBoundaries(0, 300, BoundaryMode.FIXED);
-        plot.setDomainBoundaries(0, 1100, BoundaryMode.FIXED);
+        plot.setDomainBoundaries(0, 11000, BoundaryMode.FIXED);
         plot.addSeries(liadata, new LineAndPointFormatter(Color.rgb(100, 100, 200), null, null, null));
         plot.setDomainStepValue(11);
         plot.setTicksPerRangeLabel(1);
